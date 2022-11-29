@@ -1,4 +1,5 @@
 <nav search_view="search" color="#67B5D9">
   <view name="netskope_client" default="true" />
   <view name="npa" />
+  <view name="transit_path_status" />
 </nav>

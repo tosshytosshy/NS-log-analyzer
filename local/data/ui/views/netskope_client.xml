@@ -737,9 +737,8 @@ true(), ErrorCode)
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="count">25</option>
+        <option name="count">10</option>
         <option name="drilldown">none</option>
-        <option name="refresh.display">progressbar</option>
       </table>
     </panel>
     <panel>
@@ -757,7 +756,7 @@ true(), ErrorCode)
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="count">25</option>
+        <option name="count">10</option>
         <option name="drilldown">none</option>
       </table>
     </panel>
