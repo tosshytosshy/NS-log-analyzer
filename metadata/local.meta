@@ -1,0 +1,25 @@
+[app/ui]
+owner = admin
+version = 8.2.4
+modtime = 1650967113.879769000
+
+[app/launcher]
+owner = admin
+version = 8.2.4
+modtime = 1650967113.880712000
+
+[app/package/check_for_updates]
+version = 8.2.4
+modtime = 1650967113.881025000
+
+[app/install/state]
+version = 8.2.4
+modtime = 1650966996.274941000
+
+[views/netskope_client]
+version = 8.2.4
+modtime = 1669685688.240889000
+
+[views/npa]
+version = 8.2.4
+modtime = 1667361376.696068000
