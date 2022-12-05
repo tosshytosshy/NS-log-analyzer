@@ -23,8 +23,269 @@
   </fieldset>
   <row>
     <panel>
-      <title>Client status</title>
+      <title>■■Basic Information■■</title>
       <table>
+        <title>The log files contain the information of the time rage below</title>
+        <search>
+          <query>index=index1 host="$field1$" 
+| stats earliest(_time) AS Earliest, latest(_time) AS Latest by sourcetype
+| convert timeformat="%Y-%m-%d %H:%M:%S" ctime(Earliest) ctime(Latest)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Host machine information</title>
+        <search>
+          <query>index=index1 sourcetype=nsdebuglog host="$field1$"  "clientStatusHandler client status message: "
+| rex field=_raw "clientStatusHandler\sclient\sstatus\smessage:\s(?&lt;client_status&gt;.*)"
+| spath input=client_status
+| table _time, client_status.*
+| rename client_status.* as *
+| rename status as Client_status
+| eval _time=timestamp
+| table _time, client_version, host_info*
+| head 1</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Client config name, NPA GW, On-Prem, Dynamic steering</title>
+        <search>
+          <query>index=json1 sourcetype=nsconfig source="*nsconfig.json" host="$field1$"  
+| rename clientConfig.* as * 
+| eval source=replace(source, "/home/netskope/logs/", "")
+| table source, configurationName, nsgw.host,  nsgw.backupHost, npa.tenant, npa.domain, dynamicSteering, onpremcheck.*
+| rename onpremcheck.* as *</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Client Version</title>
+      <chart>
+        <search>
+          <query>index=index1 sourcetype=nsdebuglog host="$field1$" "clientStatusHandler client status message: "
+| rex field=_raw "clientStatusHandler\sclient\sstatus\smessage:\s(?&lt;client_status&gt;.*)"
+| spath input=client_status
+| stats count by client_status.client_version</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>NS GW Connected POP</title>
+      <chart>
+        <search>
+          <query>index=index1 sourcetype=nsdebuglog host="$field1$" "Tunnel established to gateway"
+| rex field=_raw "pop:\s(?&lt;pop&gt;.*),\sassigned"
+| table _raw, pop
+| stats count by pop</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>NS GW IP</title>
+      <chart>
+        <search>
+          <query>index=index1 sourcetype=nsdebuglog host="$field1$" "New host IP to monitor"
+| rex field=_raw "monitor:\s(?&lt;NS_GW&gt;\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+| stats count by NS_GW</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>NPA GW IP</title>
+      <chart>
+        <search>
+          <query>index=index1 sourcetype=npadebuglog host="$field1$" "TLS client established connection"
+| rex field=_raw "server:(?&lt;NPA_GW&gt;.*):443"
+| stats count by NPA_GW</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Client status history</title>
+      <table>
+        <title>the information from nsdebuglog.log client status message</title>
         <search>
           <query>index=index1 host="$field1$" sourcetype=nsdebuglog "clientStatusHandler client status message: "
 | rex field=_raw "clientStatusHandler\sclient\sstatus\smessage:\s(?&lt;client_status&gt;.*)"
@@ -43,11 +304,36 @@
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
-        <option name="refresh.display">progressbar</option>
         <option name="rowNumbers">false</option>
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
       </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Client version and Autoupdate</title>
+      <event>
+        <search>
+          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "package version" OR "auto update" OR "STA user agent" OR "client ver:"
+| sort -_time
+| table _raw</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">none</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">raw</option>
+      </event>
     </panel>
   </row>
   <row>
@@ -63,7 +349,7 @@
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="count">5</option>
+        <option name="count">10</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
@@ -71,32 +357,6 @@
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
       </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Autoupdate</title>
-      <event>
-        <search>
-          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "package version" OR "auto update" OR "STA user agent" OR "client ver:"
-| sort -_time
-| table _raw</query>
-          <earliest>$field2.earliest$</earliest>
-          <latest>$field2.latest$</latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="count">15</option>
-        <option name="list.drilldown">none</option>
-        <option name="list.wrap">1</option>
-        <option name="maxLines">5</option>
-        <option name="raw.drilldown">none</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="rowNumbers">0</option>
-        <option name="table.drilldown">all</option>
-        <option name="table.sortDirection">asc</option>
-        <option name="table.wrap">1</option>
-        <option name="type">raw</option>
-      </event>
     </panel>
   </row>
   <row>
@@ -127,11 +387,12 @@
     <panel>
       <title>Process exited</title>
       <table>
+        <title>Exited Process history</title>
         <search>
-          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "exited"
-| rex field=_raw "cpp:\d+(?&lt;Msg&gt;.*)"
+          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "exited" OR "exiting ======" OR "stopping ======"
+| rex field=_raw "[cpp|mm]:\d+(?&lt;Msg&gt;.*)"
 | table _time, Msg
-| sort -_tim</query>
+| sort -_time</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -1037,12 +1298,14 @@ true(), ErrorCode)
   </row>
   <row>
     <panel>
-      <title>Steering Conf, Traffic Mode</title>
+      <title>Steering Conf, Traffic Mode configuration change history</title>
       <table>
         <search>
           <query>index=index1 host="$field1$" sourcetype=nsdebuglog "SteeringConfig Steering Config name:"
 | rex field=_raw "name:\s(?&lt;SteeringConf&gt;.*)\sTraffic\sMode:\s(?&lt;TrafficMode&gt;.*)\sDynamic\ssteering\s(?&lt;DynamicSteering&gt;\d)"
 | table _time, SteeringConf, TrafficMode, DynamicSteering
+| sort _time
+| dedup consecutive=true SteeringConf, TrafficMode, DynamicSteering
 | sort -_time</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
@@ -1065,6 +1328,8 @@ true(), ErrorCode)
           <query>index=index1 host="$field1$" sourcetype=nsdebuglog "Dynamic Web Mode"
 | rex field=_raw "Dynamic\sWeb\sMode\s=\s(?&lt;WebMode&gt;\d),\sFirewall\sMode\s=\s(?&lt;FirewallMode&gt;\d)"
 | table _time, WebMode, FirewallMode
+| sort _time
+| dedup consecutive=true WebMode, FirewallMode
 | sort -_time</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
@@ -1915,49 +2180,25 @@ true(), ErrorCode)
   </row>
   <row>
     <panel>
-      <title>Tray icon status(Mac)</title>
-      <chart>
+      <title>NPA - Authentication</title>
+      <table>
         <search>
-          <query>index=index1 host="$field1$" sourcetype="nsdebuglog"  "trayicon state:"
-| rex field=_raw "trayicon\sstate:\s(?&lt;Trayicon&gt;.*)"
-| timechart span=10m count by Trayicon</query>
-          <earliest>1627830000</earliest>
-          <latest>1627916400</latest>
+          <query>index=index1 host="$field1$" re-auth OR IdPProvisioning
+| table _raw
+| sort _raw</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
-        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
-        <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.visibility">visible</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
-        <option name="charting.axisX.abbreviation">none</option>
-        <option name="charting.axisX.scale">linear</option>
-        <option name="charting.axisY.abbreviation">none</option>
-        <option name="charting.axisY.scale">linear</option>
-        <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
-        <option name="charting.axisY2.scale">inherit</option>
-        <option name="charting.chart">column</option>
-        <option name="charting.chart.bubbleMaximumSize">50</option>
-        <option name="charting.chart.bubbleMinimumSize">10</option>
-        <option name="charting.chart.bubbleSizeBy">area</option>
-        <option name="charting.chart.nullValueMode">gaps</option>
-        <option name="charting.chart.showDataLabels">none</option>
-        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-        <option name="charting.chart.stackMode">stacked</option>
-        <option name="charting.chart.style">shiny</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.layout.splitSeries">0</option>
-        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
-        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-        <option name="charting.legend.mode">standard</option>
-        <option name="charting.legend.placement">bottom</option>
-        <option name="charting.lineWidth">2</option>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
         <option name="refresh.display">progressbar</option>
-        <option name="trellis.enabled">0</option>
-        <option name="trellis.scales.shared">1</option>
-        <option name="trellis.size">medium</option>
-      </chart>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
     </panel>
   </row>
   <row>
@@ -2420,29 +2661,6 @@ true(), ErrorCode)
 | rex field=_raw "Seq\s(?&lt;Seq&gt;.*),\sclientId\s(?&lt;clientId&gt;.*),\sconnId\s(?&lt;connId&gt;.*),\sdestUrl\s(?&lt;destUrl&gt;.*),\sdport\s(?&lt;dport&gt;.*),\sipproto\s(?&lt;ipproto&gt;.*),\stype\s(?&lt;type&gt;.*),\sdlen\s(?&lt;dlen&gt;.*),\serror\s(?&lt;error&gt;.*)\sdevice\scn\s(?&lt;devicecn&gt;.*),\suser\s(?&lt;user&gt;.*),\stenant.*publisherCN\s(?&lt;publisherCN&gt;.*),\sdestIp\s(?&lt;destIp&gt;.*)\smeta\s(?&lt;meta&gt;.*)"
 | table _time, Seq, clientId, connId, destUrl, ipproto, type, dlen, error, devicecn, user, publisherCN, destIp, meta
 | sort _time</query>
-          <earliest>$field2.earliest$</earliest>
-          <latest>$field2.latest$</latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="count">10</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="percentagesRow">false</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="rowNumbers">false</option>
-        <option name="totalsRow">false</option>
-        <option name="wrap">true</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>NPA - Authentication</title>
-      <table>
-        <search>
-          <query>index=index1 host="$field1$" re-auth OR IdPProvisioning
-| table _raw
-| sort _raw</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>

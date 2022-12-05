@@ -1,7 +1,7 @@
 <form theme="light">
   <label>Transit path status</label>
   <fieldset submitButton="false">
-    <input type="time" token="field1">
+    <input type="time" token="field2">
       <label></label>
       <default>
         <earliest>-24h@h</earliest>
@@ -18,9 +18,10 @@
 | eval mylinktext=tonumber(replace(linktext, "ms", ""))
 | stats avg(mylinktext) as linktext count by to, from, type
 | eval linktext=round(linktext)
-| eval linkColor=case(linktext&lt;=9, "green", linktext&gt;10 AND linktext&lt;=20, "orange", linktext&gt;20, "red") 
+| eval linkColor=case(linktext&lt;10, "green", linktext&gt;=10 AND linktext&lt;20, "orange", linktext&gt;=20, "red") 
 | table from, to, linktext, type, linkColor</query>
-          <earliest>0</earliest>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="drilldown">none</option>
@@ -50,6 +51,7 @@
         <option name="network-diagram-viz.network-diagram-viz.tokenToolTip">nd_tooltip_token</option>
         <option name="network-diagram-viz.network-diagram-viz.tokenValue">nd_value_token</option>
         <option name="network-diagram-viz.network-diagram-viz.wrapNodeText">true</option>
+        <option name="refresh.display">progressbar</option>
         <option name="trellis.enabled">0</option>
         <option name="trellis.scales.shared">1</option>
         <option name="trellis.size">medium</option>
