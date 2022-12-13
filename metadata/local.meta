@@ -18,11 +18,11 @@ modtime = 1650966996.274941000
 
 [views/netskope_client]
 version = 8.2.4
-modtime = 1670207030.884075000
+modtime = 1670908646.467723000
 
 [views/npa]
 version = 8.2.4
-modtime = 1667361376.696068000
+modtime = 1670489786.572675000
 
 [views/transit_path_status]
 owner = admin

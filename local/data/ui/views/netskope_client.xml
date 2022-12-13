@@ -47,58 +47,6 @@
   </row>
   <row>
     <panel>
-      <table>
-        <title>Host machine information</title>
-        <search>
-          <query>index=index1 sourcetype=nsdebuglog host="$field1$"  "clientStatusHandler client status message: "
-| rex field=_raw "clientStatusHandler\sclient\sstatus\smessage:\s(?&lt;client_status&gt;.*)"
-| spath input=client_status
-| table _time, client_status.*
-| rename client_status.* as *
-| rename status as Client_status
-| eval _time=timestamp
-| table _time, client_version, host_info*
-| head 1</query>
-          <earliest>0</earliest>
-          <latest></latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="count">100</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="percentagesRow">false</option>
-        <option name="rowNumbers">false</option>
-        <option name="totalsRow">false</option>
-        <option name="wrap">true</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <table>
-        <title>Client config name, NPA GW, On-Prem, Dynamic steering</title>
-        <search>
-          <query>index=json1 sourcetype=nsconfig source="*nsconfig.json" host="$field1$"  
-| rename clientConfig.* as * 
-| eval source=replace(source, "/home/netskope/logs/", "")
-| table source, configurationName, nsgw.host,  nsgw.backupHost, npa.tenant, npa.domain, dynamicSteering, onpremcheck.*
-| rename onpremcheck.* as *</query>
-          <earliest>0</earliest>
-          <latest></latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="count">100</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="percentagesRow">false</option>
-        <option name="rowNumbers">false</option>
-        <option name="totalsRow">false</option>
-        <option name="wrap">true</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
       <title>Client Version</title>
       <chart>
         <search>
@@ -283,6 +231,60 @@
   </row>
   <row>
     <panel>
+      <table>
+        <title>Host machine information</title>
+        <search>
+          <query>index=index1 sourcetype=nsdebuglog host="$field1$"  "clientStatusHandler client status message: "
+| rex field=_raw "clientStatusHandler\sclient\sstatus\smessage:\s(?&lt;client_status&gt;.*)"
+| spath input=client_status
+| table _time, client_status.*
+| rename client_status.* as *
+| rename status as Client_status
+| eval _time=timestamp
+| table _time, client_version, host_info*
+| head 1</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Client config name, NPA GW, On-Prem, Dynamic steering</title>
+        <search>
+          <query>index=json1 sourcetype=nsconfig source="*nsconfig.json" host="$field1$"  
+| rename clientConfig.* as * 
+| eval source=replace(source, "/home/netskope/logs/", "")
+| table source, configurationName, nsgw.host,  nsgw.backupHost, npa.tenant, npa.domain, dynamicSteering, onpremcheck.*
+| rename onpremcheck.* as *</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
       <title>Client status history</title>
       <table>
         <title>the information from nsdebuglog.log client status message</title>
@@ -349,7 +351,7 @@
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="count">10</option>
+        <option name="count">5</option>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
@@ -938,11 +940,12 @@ true(), ErrorCode)
       </chart>
     </panel>
     <panel>
-      <title>NPA - Tunnel disconnected  (Dispatcher is winding down. Let's clear everything)</title>
+      <title>NPA - Tunnel disconnected  ("Cleaning up l3clientChannel" OR "Dispatcher is winding down. Let's clear everything")</title>
       <chart>
         <search>
-          <query>index=index1 host="$field1$" sourcetype=npadebuglog "Dispatcher is winding down"
-| timechart span=15m count</query>
+          <query>index=index1 host="$field1$" sourcetype=npadebuglog "Dispatcher is winding down" OR "Cleaning up l3clientChannel"
+| rex field=_raw "0x[0-9|a-z]+\s(?&lt;Msg&gt;.*)"
+| timechart span=15m count by Msg</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -990,16 +993,17 @@ true(), ErrorCode)
         <search>
           <query>index=index1 host="$field1$" sourcetype=nsdebuglog  "nsssl.cpp" AND ("Inserting sock" OR "Closing sock")
 | rex field=_raw "\ssock\s(?&lt;Sock&gt;\d+)"
-| stats min(_time) as _time max(_time) as ENDTIME by Sock
-| eval DURATION_MINS=round((ENDTIME-_time) / 60)
+| transaction Sock startswith="Inserting" endswith="Closing"
+| eval DURATION_MINS=round(duration /60)
 | table _time, Sock, DURATION_MINS
-| sort _time</query>
+| sort -_time</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="count">10</option>
         <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
       </table>
     </panel>
     <panel>
@@ -1008,17 +1012,18 @@ true(), ErrorCode)
         <title>Sterting handler/Handler stopped</title>
         <search>
           <query>index=index1 host="$field1$" sourcetype=npadebuglog ("Starting handler" OR "Handler stopped") 
-| rex field=_raw "(?&lt;Handler&gt;[0-9|A-F|a-f]{8})" 
+| rex field=_raw "(?&lt;Handler&gt;[0-9|A-F|a-f]{8,12})[,|\)]"
 | transaction Handler startswith="Starting" endswith="stopped"
 | eval myduration=round(duration /60)
 | table _time, Handler, myduration
-| sort _time</query>
+| sort -_time</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="count">10</option>
         <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
       </table>
     </panel>
   </row>

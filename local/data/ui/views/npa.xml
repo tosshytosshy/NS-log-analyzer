@@ -154,7 +154,9 @@
           <query>index=npa host="$field1$" "eventlogger.cpp" AND "log"
 | rex field=_raw "0x[0-9|a-f]+\s(?&lt;EventData&gt;.*)"
 | spath input=EventData
-| table _time, userId, clientIp, destHost, destIp, destPort, deviceId, eventId, proto, rxBytes, sourceIp, sourcePort, tenant, txBytes
+| eval txMB=round(txBytes/1024000)
+| eval rxMB=round(rxBytes/1024000)
+| table _time, userId, clientIp, destHost, destIp, destPort, deviceId, eventId, proto, rxBytes, sourceIp, sourcePort, tenant, txMB, rxMB
 |  sort -_time</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
