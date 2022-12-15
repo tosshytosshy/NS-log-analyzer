@@ -410,7 +410,8 @@
       <table>
         <title>Autodetect, PAC File URL, Static setting</title>
         <search>
-          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "Proxy settings: auto detect"
+          <query>index=index1 host="$field1$" sourcetype=nsdebuglog  "proxy.cpp" AND ("Proxy settings: auto detect" OR "file url")
+| rex field=_raw "file\surl\s(?&lt;PAC_URL&gt;.*)"
 | rex field=_raw "Proxy settings:\sauto\sdetect\s(?&lt;autodetect&gt;\d),\sPAC\s(?&lt;PAC_URL&gt;.*),\sstatic\s(?&lt;staticProxy&gt;.*)"
 | table _time, autodetect, PAC_URL, staticProxy
 | sort -_time</query>
@@ -431,10 +432,10 @@
     <panel>
       <title>Proxy in Pac file</title>
       <table>
-        <title>Proxies string detected</title>
+        <title>Win: Proxies string detected, Mac: ProxyInfoReader</title>
         <search>
-          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "Proxies string detected"
-| rex field=_raw "detected:\s(?&lt;ProxyString&gt;.*)"
+          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "proxy.cpp" AND ("Proxies string detected" OR "Proxy Name")
+| rex field=_raw "proxy\.cpp:\d+\s(?&lt;ProxyString&gt;.*)"
 | table _time, ProxyString
 | sort -_time</query>
           <earliest>$field2.earliest$</earliest>
@@ -445,6 +446,7 @@
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
         <option name="rowNumbers">false</option>
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
