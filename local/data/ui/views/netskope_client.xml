@@ -391,7 +391,7 @@
       <table>
         <title>Exited Process history</title>
         <search>
-          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "exited" OR "exiting ======" OR "stopping ======"
+          <query>index=index1 host="$field1$" sourcetype=nsdebuglog "exited" OR "exiting" OR "stoppin" OR "Exception received" OR "crash dump"
 | rex field=_raw "[cpp|mm]:\d+(?&lt;Msg&gt;.*)"
 | table _time, Msg
 | sort -_time</query>
@@ -775,13 +775,12 @@ true(), ErrorCode)
   </row>
   <row>
     <panel>
-      <title>Windows - Pref src Interface/IP</title>
+      <title>Interface and IP</title>
       <chart>
         <search>
-          <query>index=index1 host="$field1$" sourcetype="nsdebuglog"  "networkMonitor.cpp" AND "Pref src ip"
-| rex field=_raw "src\sip\s(?&lt;SrcIP&gt;.*),\s(?&lt;Int&gt;[a-z|0-9|\s]+)"
-| eval Result = Int." - ".SrcIP
-| timechart span=5m count by Result</query>
+          <query>index=index1 host="$field1$" sourcetype="nsdebuglog" "networkMonitor.cpp" AND ("Pref src ip" OR "Best route interface")
+| rex field=_raw "networkMonitor\.cpp:\d+\s(?&lt;MSG&gt;.*)"
+| timechart span=15m count by MSG</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
